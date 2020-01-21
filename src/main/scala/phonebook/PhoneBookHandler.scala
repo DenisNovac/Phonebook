@@ -3,23 +3,33 @@ import PhoneEntryHandler.PhoneEntry
 import java.util.UUID.randomUUID
 import java.util.UUID.fromString
 
-import com.sun.security.auth.UnixNumericUserPrincipal
-import io.circe.Json
+import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
+import io.circe.{Decoder, DecodingFailure, Encoder, Json}
 import io.circe.syntax._
-import scala.util.matching.Regex
 
 object PhoneBookHandler {
-  /** Основной хендлер для телефонных книг. Работает с иммутабельными книгами.
-    *
-    */
+
   type PhoneBook = List[PhoneEntry]
+
+  /** Модель JSON для телефонной книги. Рядом находятся энкодер и декодер для
+   *  преобразования в JSON или обратно
+   *  @param items телефонная книга, которую требуется вывести в JSON
+   */
+  case class PhoneBookModel(items: PhoneBook)
+  implicit val bookEncoder: Encoder[PhoneBookModel] = deriveEncoder[PhoneBookModel]
+  implicit val bookDecoder: Decoder[PhoneBookModel] = deriveDecoder[PhoneBookModel]
+
+  def bookToJson(book: PhoneBook): Json = PhoneBookModel(book).asJson
+
+  def jsonToBook(json: Json): Either[DecodingFailure,PhoneBook] = bookDecoder.decodeJson(json) match {
+    case Right(PhoneBookModel(items)) => Right(items)
+    case Left(e) => Left(e)
+  }
 
 
   def createBook(): PhoneBook = Nil
 
-
-  def bookToJson(book: PhoneBook): Json = book.asJson
-
+  //def jsonToBook(json: Json): PhoneBook = decoder.decodeJson(json)
 
   def insertEntryToBook(book: PhoneBook, name: String, number: String): Either[PhoneBookError, PhoneBook] =
     if (name.isBlank) Left(InvalidNameFormat)
@@ -31,6 +41,7 @@ object PhoneBookHandler {
     book.filter(_.id.toString equals uuid) match {
       case Nil => Left(NoSuchIdInBookError)
       case x :: Nil => Right(x.name)
+      case x :: xs => Left(MoreThanOneIdError)
     }
 
 
@@ -38,6 +49,7 @@ object PhoneBookHandler {
     book.filter(_.id.toString equals uuid) match {
       case Nil => Left(NoSuchIdInBookError)
       case x :: Nil => Right(x.phoneNumber)
+      case x :: xs => Left(MoreThanOneIdError)
     }
 
 
@@ -54,6 +66,7 @@ object PhoneBookHandler {
       case Nil => Left(NoSuchIdInBookError)
       case x :: Nil =>
         Right(PhoneEntry(fromString(uuid), newName, x.phoneNumber) :: book.filterNot(_.id.toString equals uuid))
+      case x :: xs => Left(MoreThanOneIdError)
     }
 
 
@@ -62,6 +75,7 @@ object PhoneBookHandler {
       case Nil => Left(NoSuchIdInBookError)
       case x :: Nil =>
         Right(PhoneEntry(fromString(uuid), x.name, newNumber) :: book.filterNot(_.id.toString equals uuid))
+      case x :: xs => Left(MoreThanOneIdError)
     }
 
 

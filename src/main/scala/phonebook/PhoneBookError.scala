@@ -4,3 +4,4 @@ sealed trait PhoneBookError
 object InvalidNameFormat extends PhoneBookError
 object InvalidNumberFormat extends PhoneBookError
 object NoSuchIdInBookError extends PhoneBookError
+object MoreThanOneIdError extends PhoneBookError
