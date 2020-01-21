@@ -1,10 +1,12 @@
 package phonebook
 
 import org.junit._
+
 import io.circe.syntax._
 import phonebook.PhoneEntryHandler.PhoneEntry
 import phonebook.PhoneEntryHandler.decoder
 import java.util.UUID.randomUUID
+
 
 class PhoneEntrySuit {
 
