@@ -1,6 +1,7 @@
 package phonebook
 
 import org.junit._
+import org.junit.Assert._
 
 import io.circe.syntax._
 import phonebook.PhoneEntryHandler.PhoneEntry
@@ -11,16 +12,17 @@ import java.util.UUID.randomUUID
 class PhoneEntrySuit {
 
   @Test def `Test entry created by "asJson"`: Unit = {
-    val Name = "Josh"
-    val Num = "1"
-    val entry = PhoneEntry(randomUUID(), Name, Num).asJson
+    val name = "Josh"
+    val num = "1"
+    val entry = PhoneEntry(randomUUID(), name, num).asJson
 
     val decoded = decoder.decodeJson(entry)
 
     decoded match {
-      case Right(x) => x match { case PhoneEntry(_, Name, Num) => true }
-      case Left(e) => false
+      case Right(x) => assertEquals((x.name, x.phoneNumber), (name, num))
+      case Left(e) => fail(e.toString)
     }
   }
+
 
 }
