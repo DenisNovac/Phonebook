@@ -68,22 +68,28 @@ object PhoneBookHandler {
     book.filter(_.phoneNumber contains number)
 
 
-  def changeNameById(book: PhoneBook, uuid: String, newName: String): Either[PhoneBookError, PhoneBook] =
-    book.filter(_.id.toString equals uuid) match {
-      case Nil => Left(NoSuchIdInBookError)
-      case x :: Nil =>
-        Right(PhoneEntry(fromString(uuid), newName, x.phoneNumber) :: book.filterNot(_.id.toString equals uuid))
-      case x :: xs => Left(MoreThanOneIdError)
-    }
+  def changeNameById(book: PhoneBook, uuid: String, newName: String): Either[PhoneBookError, PhoneBook] = {
+    if (!isNameValid(newName)) Left(InvalidNameFormat)
+    else
+      book.filter(_.id.toString equals uuid) match {
+        case Nil => Left(NoSuchIdInBookError)
+        case x :: Nil =>
+          Right(PhoneEntry(fromString(uuid), newName, x.phoneNumber) :: book.filterNot(_.id.toString equals uuid))
+        case x :: xs => Left(MoreThanOneIdError)
+      }
+  }
 
 
-  def changePhoneNumberById(book: PhoneBook, uuid: String, newNumber: String): Either[PhoneBookError, PhoneBook] =
-    book.filter(_.id.toString equals uuid) match {
-      case Nil => Left(NoSuchIdInBookError)
-      case x :: Nil =>
-        Right(PhoneEntry(fromString(uuid), x.name, newNumber) :: book.filterNot(_.id.toString equals uuid))
-      case x :: xs => Left(MoreThanOneIdError)
-    }
+  def changePhoneNumberById(book: PhoneBook, uuid: String, newNumber: String): Either[PhoneBookError, PhoneBook] = {
+    if (!isNameValid(newNumber)) Left(InvalidNumberFormat)
+    else
+      book.filter(_.id.toString equals uuid) match {
+        case Nil => Left(NoSuchIdInBookError)
+        case x :: Nil =>
+          Right(PhoneEntry(fromString(uuid), x.name, newNumber) :: book.filterNot(_.id.toString equals uuid))
+        case x :: xs => Left(MoreThanOneIdError)
+      }
+  }
 
 
   def removeEntryFromBookById(book: PhoneBook, uuid: String): Either[PhoneBookError, PhoneBook] = {
@@ -92,8 +98,6 @@ object PhoneBookHandler {
       case Some(x) => Right(book.filterNot(_.id.toString == uuid))
     }
   }
-
-
 }
 
 
