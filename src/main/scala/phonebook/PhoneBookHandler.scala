@@ -31,9 +31,16 @@ object PhoneBookHandler {
 
   //def jsonToBook(json: Json): PhoneBook = decoder.decodeJson(json)
 
+  def isNameValid(name: String): Boolean =
+    !name.isBlank
+
+  def isNumberValid(number: String): Boolean =
+    !number.isBlank
+
+
   def insertEntryToBook(book: PhoneBook, name: String, number: String): Either[PhoneBookError, PhoneBook] =
-    if (name.isBlank) Left(InvalidNameFormat)
-    else if (number.isBlank) Left(InvalidNumberFormat)
+    if (!isNameValid(name)) Left(InvalidNameFormat)
+    else if (!isNumberValid(number)) Left(InvalidNumberFormat)
     else Right(PhoneEntry(randomUUID(),name, number) :: book)
 
 
