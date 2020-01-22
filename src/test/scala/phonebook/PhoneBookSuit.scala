@@ -12,7 +12,7 @@ class PhoneBookSuit {
   }
 
   @Test def `Empty number is not valid`: Unit = {
-    assertFalse(isNumberValid(""))
+    assertFalse(isPhoneValid(""))
   }
 
   @Test def `Insert empty name is not possible`: Unit = {
@@ -46,27 +46,27 @@ class PhoneBookSuit {
 
   @Test def `Get entry by partial name validates name`: Unit = {
     val book = Contact(1, "Gwyn. Lord of Cinder", "1234342") :: Nil
-    val entry = findContactsByName(book, "")
+    val entry = findContactsByName(book, List(""))
     assertEquals(Left(InvalidNameValue), entry)
   }
 
   @Test def `Get one entry by partial name`: Unit = {
-    val book = Contact(1, "Gwyn. Lord of Cinder", "1234342") :: Nil
-    val entry = findContactsByName(book, "of Cinder")
+    val book = Contact(1, "Gwyn, Lord of Cinder", "1234342") :: Nil
+    val entry = findContactsByName(book, List("Gwyn"))
     assertEquals(Right(book), entry)
   }
 
   @Test def `Get two entry by partial name`: Unit = {
-    val book = Contact(1, "Gwyn. Lord of Cinder", "1234342") ::
-      Contact(2, "Soul of Cinder", "1234342") :: Nil
-    val entry = findContactsByName(book, "of Cinder")
+    val book = Contact(1, "Gwyn, Lord of Cinder", "1234342") ::
+      Contact(2, "Gwyn, Lord of Sunlight", "1234342") :: Nil
+    val entry = findContactsByName(book, List("Gwyn"))
     assertEquals(Right(book), entry)
   }
 
   @Test def `Get no entries by partial name`: Unit = {
     val book = Contact(1, "Gwyn. Lord of Cinder", "1234342") ::
       Contact(2, "Soul of Cinder", "1234342") :: Nil
-    val entry = findContactsByName(book, "Aldrich, Saint of the Deep")
+    val entry = findContactsByName(book, List("Aldrich, Saint of the Deep"))
     assertEquals(Right(List()), entry)
   }
 
@@ -75,27 +75,27 @@ class PhoneBookSuit {
   @Test def `Get entry by partial phone validates phone`: Unit = {
     val book = Contact(1, "Gwyn. Lord of Cinder", "1234342") ::
       Contact(2, "Soul of Cinder", "1234342") :: Nil
-    val entry = findContactsByPhone(book, "")
+    val entry = findContactsByPhone(book, List(""))
     assertEquals(Left(InvalidPhoneValue), entry)
   }
 
   @Test def `Get one entry by partial number`: Unit = {
     val book = Contact(1, "Gwyn. Lord of Cinder", "1234342") :: Nil
-    val entry = findContactsByPhone(book, "123")
+    val entry = findContactsByPhone(book, List("123"))
     assertEquals(Right(book), entry)
   }
 
   @Test def `Get two entry by partial number`: Unit = {
     val book = Contact(1, "Gwyn. Lord of Cinder", "1234342") ::
       Contact(2, "Soul of Cinder", "1234342") :: Nil
-    val entry = findContactsByPhone(book, "123")
+    val entry = findContactsByPhone(book, List("123"))
     assertEquals(Right(book), entry)
   }
 
   @Test def `Get no entries by partial number`: Unit = {
     val book = Contact(1, "Gwyn. Lord of Cinder", "1234342") ::
       Contact(2, "Soul of Cinder", "1234342") :: Nil
-    val entry = findContactsByPhone(book, "999123")
+    val entry = findContactsByPhone(book, List("999123"))
     assertEquals(Right(List()), entry)
   }
 
@@ -127,13 +127,11 @@ class PhoneBookSuit {
 
   @Test def `Updating contact throws error if name is not valid`: Unit = {
     val book = Contact(1, "John", "1") :: Contact(2, "Sam", "2") :: Nil
-    val book2 = Contact(2, "Stanley", "2") :: Contact(1, "John", "1") :: Nil
     assertEquals(Left(InvalidInput), updateContact(book, 2, ContactRequest("", "23423")))
   }
 
   @Test def `Updating contact throws error if phone is not valid`: Unit = {
     val book = Contact(1, "John", "1") :: Contact(2, "Sam", "2") :: Nil
-    val book2 = Contact(2, "Stanley", "2") :: Contact(1, "John", "1") :: Nil
     assertEquals(Left(InvalidInput), updateContact(book, 2, ContactRequest("Stanley", "")))
   }
 

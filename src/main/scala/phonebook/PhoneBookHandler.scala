@@ -28,12 +28,12 @@ object PhoneBookHandler {
   def isNameValid(name: String): Boolean =
     !name.isBlank
 
-  def isNumberValid(number: String): Boolean =
+  def isPhoneValid(number: String): Boolean =
     !number.isBlank
 
 
   def addContact(book: PhoneBook, contact: ContactRequest): Either[PhoneBookError, PhoneBook] =
-    if (isNameValid(contact.name) & isNumberValid(contact.phoneNumber))
+    if (isNameValid(contact.name) & isPhoneValid(contact.phoneNumber))
       Right(Contact(IdGenerator.next(), contact.name, contact.phoneNumber) :: book)
     else Left(InvalidInput)
 
@@ -45,21 +45,42 @@ object PhoneBookHandler {
     }
 
 
-  def findContactsByName(book: PhoneBook, name: String): Either[PhoneBookError, PhoneBook] =
-    if (isNameValid(name))
-      Right(book.filter(_.name contains name))
+  def findContactsByName(book: PhoneBook, names: List[String]): Either[PhoneBookError, PhoneBook] = {
+    if (names forall(n => isNameValid(n))) {
+      val search = for {
+        n <- names
+        x = book.filter(_.name startsWith n)
+        if x.nonEmpty
+      } yield x
+
+      Right(search.flatten)
+    }
     else Left(InvalidNameValue)
+  }
+
+  def findContactsByPhone(book: PhoneBook, phones: List[String]): Either[PhoneBookError, PhoneBook] = {
+    if (phones forall(p => isPhoneValid(p))) {
+      val search = for {
+        p <- phones
+        x = book.filter(_.phoneNumber startsWith p)
+        if x.nonEmpty
+      } yield x
+
+      Right(search.flatten)
+    }
+    else Left(InvalidPhoneValue)
+  }
 
 
-  def findContactsByPhone(book: PhoneBook, phone: String): Either[PhoneBookError, PhoneBook] =
+  /*def findContactsByPhone(book: PhoneBook, phone: String): Either[PhoneBookError, PhoneBook] =
     if (isNumberValid(phone))
       Right(book.filter(_.phoneNumber contains phone))
-    else Left(InvalidPhoneValue)
+    else Left(InvalidPhoneValue)*/
 
 
   def updateContact(book: PhoneBook, id: Long, input: ContactRequest): Either[PhoneBookError, PhoneBook] = {
     book.find(_.id equals id) match {
-      case Some(x) if isNameValid(input.name) & isNumberValid(input.phoneNumber) =>
+      case Some(x) if isNameValid(input.name) & isPhoneValid(input.phoneNumber) =>
         Right(Contact(id, input.name, input.phoneNumber) :: book.filterNot(_.id equals id))
       case None => Left(InvalidInput)
       case _ => Left(InvalidInput)
