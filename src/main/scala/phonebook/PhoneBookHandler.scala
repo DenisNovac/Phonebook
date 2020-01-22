@@ -1,13 +1,12 @@
 package phonebook
-import PhoneEntryHandler.PhoneEntry
-
+import ContactHandler.{Contact, ContactRequest}
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, DecodingFailure, Encoder, Json}
 import io.circe.syntax._
 
 object PhoneBookHandler {
 
-  type PhoneBook = List[PhoneEntry]
+  type PhoneBook = List[Contact]
 
   /** Модель JSON для телефонной книги. Рядом находятся энкодер и декодер для
    *  преобразования в JSON или обратно
@@ -33,13 +32,13 @@ object PhoneBookHandler {
     !number.isBlank
 
 
-  def addContact(book: PhoneBook, name: String, number: String): Either[PhoneBookError, PhoneBook] =
-    if (isNameValid(name) & isNumberValid(number))
-      Right(PhoneEntry(IdGenerator.next(), name, number) :: book)
+  def addContact(book: PhoneBook, contact: ContactRequest): Either[PhoneBookError, PhoneBook] =
+    if (isNameValid(contact.name) & isNumberValid(contact.phoneNumber))
+      Right(Contact(IdGenerator.next(), contact.name, contact.phoneNumber) :: book)
     else Left(InvalidInput)
 
 
-  def contactId(book: PhoneBook, id: Long): Either[PhoneBookError, PhoneEntry] =
+  def contactId(book: PhoneBook, id: Long): Either[PhoneBookError, Contact] =
     book.filter(_.id equals id) match {
       case Nil => Left(ContactNotFound)
       case x :: Nil => Right(x)
@@ -52,13 +51,13 @@ object PhoneBookHandler {
     else Left(InvalidNameValue)
 
 
-  def findContactsByPhone(book: PhoneBook, number: String): Either[PhoneBookError, PhoneBook] =
-    if (isNumberValid(number))
-      Right(book.filter(_.phoneNumber contains number))
+  def findContactsByPhone(book: PhoneBook, phone: String): Either[PhoneBookError, PhoneBook] =
+    if (isNumberValid(phone))
+      Right(book.filter(_.phoneNumber contains phone))
     else Left(InvalidPhoneValue)
 
 
-  def updateContact(book: PhoneBook, input: PhoneEntry): Either[PhoneBookError, PhoneBook] = {
+  def updateContact(book: PhoneBook, input: Contact): Either[PhoneBookError, PhoneBook] = {
     book.find(_.id equals input.id) match {
       case Some(x) if isNameValid(input.name) & isNumberValid(input.phoneNumber) => Right(input :: book.filterNot(_.id equals input.id))
       case None => Left(InvalidInput)

@@ -2,9 +2,8 @@ package phonebook
 
 import io.circe.{Decoder, Encoder}
 import io.circe.generic.semiauto.{deriveEncoder, deriveDecoder}
-import java.util.UUID
 
-object PhoneEntryHandler {
+object ContactHandler {
 
 
   /** Модель для телефонных записей, которая содержит необходимые поля для JSON-а.
@@ -15,10 +14,14 @@ object PhoneEntryHandler {
    *  @param name имя владельца телефона
    *  @param phoneNumber телефонный номер
    */
-  case class PhoneEntry(id: Long, name: String, phoneNumber: String)
+  case class Contact(id: Long, name: String, phoneNumber: String)
+
+  implicit val contactEncoder: Encoder[Contact] = deriveEncoder[Contact]
+  implicit val contactDecoder: Decoder[Contact] = deriveDecoder[Contact]
 
 
-  implicit val entryEncoder: Encoder[PhoneEntry] = deriveEncoder[PhoneEntry]
-  implicit val entryDecoder: Decoder[PhoneEntry] = deriveDecoder[PhoneEntry]
+  case class ContactRequest(name: String, phoneNumber: String)
+  implicit val requestEncoder: Encoder[ContactRequest] = deriveEncoder[ContactRequest]
+  implicit val requestDecoder: Decoder[ContactRequest] = deriveDecoder[ContactRequest]
 
 }

@@ -3,7 +3,7 @@ package phonebook
 import org.junit._
 import org.junit.Assert._
 import phonebook.PhoneBookHandler._
-import phonebook.PhoneEntryHandler._
+import phonebook.ContactHandler._
 
 class PhoneBookSuit {
 
@@ -16,27 +16,27 @@ class PhoneBookSuit {
   }
 
   @Test def `Insert empty name is not possible`: Unit = {
-    val result = addContact(createBook(), "", "12345")
+    val result = addContact(createBook(), ContactRequest("", "12345"))
     assertEquals(Left(InvalidInput), result)
   }
 
   @Test def `Insert empty number is not possible`: Unit = {
-    val result = addContact(createBook(), "Josh", "")
+    val result = addContact(createBook(), ContactRequest("Josh", ""))
     assertEquals(Left(InvalidInput), result)
   }
 
   @Test def `Inserting in book works`: Unit = {
     val name = "James Sunderland"
-    val number = "883-223"
-    val result = addContact(createBook(), name, number)
-    assertEquals(Right(List(PhoneEntry(0, name, number))), result)
+    val phone = "883-223"
+    val result = addContact(createBook(), ContactRequest(name, phone))
+    assertEquals(Right(List(Contact(0, name, phone))), result)
   }
 
 
 
   @Test def `Book to json and backwards works`: Unit = {
-    val book = PhoneEntry(1, "Harry Mason", "821-223") ::
-      PhoneEntry(2, "James Sunderland", "324-223") :: Nil
+    val book = Contact(1, "Harry Mason", "821-223") ::
+      Contact(2, "James Sunderland", "324-223") :: Nil
     val json = listContacts(book)
     val decoded = jsonToBook(json)
     assertEquals(Right(book), decoded)
@@ -45,27 +45,27 @@ class PhoneBookSuit {
 
 
   @Test def `Get entry by partial name validates name`: Unit = {
-    val book = PhoneEntry(1, "Gwyn. Lord of Cinder", "1234342") :: Nil
+    val book = Contact(1, "Gwyn. Lord of Cinder", "1234342") :: Nil
     val entry = findContactsByName(book, "")
     assertEquals(Left(InvalidNameValue), entry)
   }
 
   @Test def `Get one entry by partial name`: Unit = {
-    val book = PhoneEntry(1, "Gwyn. Lord of Cinder", "1234342") :: Nil
+    val book = Contact(1, "Gwyn. Lord of Cinder", "1234342") :: Nil
     val entry = findContactsByName(book, "of Cinder")
     assertEquals(Right(book), entry)
   }
 
   @Test def `Get two entry by partial name`: Unit = {
-    val book = PhoneEntry(1, "Gwyn. Lord of Cinder", "1234342") ::
-      PhoneEntry(2, "Soul of Cinder", "1234342") :: Nil
+    val book = Contact(1, "Gwyn. Lord of Cinder", "1234342") ::
+      Contact(2, "Soul of Cinder", "1234342") :: Nil
     val entry = findContactsByName(book, "of Cinder")
     assertEquals(Right(book), entry)
   }
 
   @Test def `Get no entries by partial name`: Unit = {
-    val book = PhoneEntry(1, "Gwyn. Lord of Cinder", "1234342") ::
-      PhoneEntry(2, "Soul of Cinder", "1234342") :: Nil
+    val book = Contact(1, "Gwyn. Lord of Cinder", "1234342") ::
+      Contact(2, "Soul of Cinder", "1234342") :: Nil
     val entry = findContactsByName(book, "Aldrich, Saint of the Deep")
     assertEquals(Right(List()), entry)
   }
@@ -73,28 +73,28 @@ class PhoneBookSuit {
 
 
   @Test def `Get entry by partial phone validates phone`: Unit = {
-    val book = PhoneEntry(1, "Gwyn. Lord of Cinder", "1234342") ::
-      PhoneEntry(2, "Soul of Cinder", "1234342") :: Nil
+    val book = Contact(1, "Gwyn. Lord of Cinder", "1234342") ::
+      Contact(2, "Soul of Cinder", "1234342") :: Nil
     val entry = findContactsByPhone(book, "")
     assertEquals(Left(InvalidPhoneValue), entry)
   }
 
   @Test def `Get one entry by partial number`: Unit = {
-    val book = PhoneEntry(1, "Gwyn. Lord of Cinder", "1234342") :: Nil
+    val book = Contact(1, "Gwyn. Lord of Cinder", "1234342") :: Nil
     val entry = findContactsByPhone(book, "123")
     assertEquals(Right(book), entry)
   }
 
   @Test def `Get two entry by partial number`: Unit = {
-    val book = PhoneEntry(1, "Gwyn. Lord of Cinder", "1234342") ::
-      PhoneEntry(2, "Soul of Cinder", "1234342") :: Nil
+    val book = Contact(1, "Gwyn. Lord of Cinder", "1234342") ::
+      Contact(2, "Soul of Cinder", "1234342") :: Nil
     val entry = findContactsByPhone(book, "123")
     assertEquals(Right(book), entry)
   }
 
   @Test def `Get no entries by partial number`: Unit = {
-    val book = PhoneEntry(1, "Gwyn. Lord of Cinder", "1234342") ::
-      PhoneEntry(2, "Soul of Cinder", "1234342") :: Nil
+    val book = Contact(1, "Gwyn. Lord of Cinder", "1234342") ::
+      Contact(2, "Soul of Cinder", "1234342") :: Nil
     val entry = findContactsByPhone(book, "999123")
     assertEquals(Right(List()), entry)
   }
@@ -102,56 +102,56 @@ class PhoneBookSuit {
 
 
   @Test def `Getting contacts by ID works`: Unit = {
-    val book = PhoneEntry(1, "John", "1") :: PhoneEntry(2, "Sam", "2") :: Nil
-    assertEquals(Right(PhoneEntry(2, "Sam", "2")), contactId(book, 2))
+    val book = Contact(1, "John", "1") :: Contact(2, "Sam", "2") :: Nil
+    assertEquals(Right(Contact(2, "Sam", "2")), contactId(book, 2))
   }
 
   @Test def `Getting contacts by ID gives error with random id`: Unit = {
-    val book = PhoneEntry(1, "John", "1") :: PhoneEntry(2, "Sam", "2") :: Nil
+    val book = Contact(1, "John", "1") :: Contact(2, "Sam", "2") :: Nil
     assertEquals(Left(ContactNotFound), contactId(book, 3))
   }
 
 
 
   @Test def `Updating contact name works`: Unit = {
-    val book = PhoneEntry(1, "John", "1") :: PhoneEntry(2, "Sam", "2") :: Nil
-    val book2 = PhoneEntry(2, "Stanley", "2") :: PhoneEntry(1, "John", "1") :: Nil
-    assertEquals(Right(book2), updateContact(book, PhoneEntry(2, "Stanley", "2")))
+    val book = Contact(1, "John", "1") :: Contact(2, "Sam", "2") :: Nil
+    val book2 = Contact(2, "Stanley", "2") :: Contact(1, "John", "1") :: Nil
+    assertEquals(Right(book2), updateContact(book, Contact(2, "Stanley", "2")))
   }
 
   @Test def `Updating contact phone works`: Unit = {
-    val book = PhoneEntry(1, "John", "1") :: PhoneEntry(2, "Sam", "2") :: Nil
-    val book2 = PhoneEntry(2, "Sam", "123") :: PhoneEntry(1, "John", "1") :: Nil
-    assertEquals(Right(book2), updateContact(book, PhoneEntry(2, "Sam", "123")))
+    val book = Contact(1, "John", "1") :: Contact(2, "Sam", "2") :: Nil
+    val book2 = Contact(2, "Sam", "123") :: Contact(1, "John", "1") :: Nil
+    assertEquals(Right(book2), updateContact(book, Contact(2, "Sam", "123")))
   }
 
   @Test def `Updating contact throws error if name is not valid`: Unit = {
-    val book = PhoneEntry(1, "John", "1") :: PhoneEntry(2, "Sam", "2") :: Nil
-    val book2 = PhoneEntry(2, "Stanley", "2") :: PhoneEntry(1, "John", "1") :: Nil
-    assertEquals(Left(InvalidInput), updateContact(book, PhoneEntry(2, "", "23423")))
+    val book = Contact(1, "John", "1") :: Contact(2, "Sam", "2") :: Nil
+    val book2 = Contact(2, "Stanley", "2") :: Contact(1, "John", "1") :: Nil
+    assertEquals(Left(InvalidInput), updateContact(book, Contact(2, "", "23423")))
   }
 
   @Test def `Updating contact throws error if phone is not valid`: Unit = {
-    val book = PhoneEntry(1, "John", "1") :: PhoneEntry(2, "Sam", "2") :: Nil
-    val book2 = PhoneEntry(2, "Stanley", "2") :: PhoneEntry(1, "John", "1") :: Nil
-    assertEquals(Left(InvalidInput), updateContact(book, PhoneEntry(2, "Stanley", "")))
+    val book = Contact(1, "John", "1") :: Contact(2, "Sam", "2") :: Nil
+    val book2 = Contact(2, "Stanley", "2") :: Contact(1, "John", "1") :: Nil
+    assertEquals(Left(InvalidInput), updateContact(book, Contact(2, "Stanley", "")))
   }
 
   @Test def `Updating contact throws error if there is no such id`: Unit = {
-    val book = PhoneEntry(1, "John", "1") :: PhoneEntry(2, "Sam", "2") :: Nil
-    assertEquals(Left(InvalidInput), updateContact(book, PhoneEntry(3, "Stanley", "2")))
+    val book = Contact(1, "John", "1") :: Contact(2, "Sam", "2") :: Nil
+    assertEquals(Left(InvalidInput), updateContact(book, Contact(3, "Stanley", "2")))
   }
 
 
 
   @Test def `Remove one ID from book works`: Unit = {
-    val book = PhoneEntry(1, "John", "1") :: PhoneEntry(2, "Sam", "2") :: Nil
-    val book2 = PhoneEntry(2, "Sam", "2") :: Nil
+    val book = Contact(1, "John", "1") :: Contact(2, "Sam", "2") :: Nil
+    val book2 = Contact(2, "Sam", "2") :: Nil
     assertEquals(Right(book2), deleteContact(book, 1))
   }
 
   @Test def `Remove multiple ID from book throws error`: Unit = {
-    val book = PhoneEntry(1, "John", "1") :: PhoneEntry(1, "Sam", "2") :: Nil
+    val book = Contact(1, "John", "1") :: Contact(1, "Sam", "2") :: Nil
     assertEquals(Left(InvalidIdSupplied), deleteContact(book, 1))
   }
 
