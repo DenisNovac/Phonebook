@@ -103,12 +103,12 @@ class PhoneBookSuit {
 
   @Test def `Getting contacts by ID works`: Unit = {
     val book = Contact(1, "John", "1") :: Contact(2, "Sam", "2") :: Nil
-    assertEquals(Right(Contact(2, "Sam", "2")), contactId(book, 2))
+    assertEquals(Right(Contact(2, "Sam", "2")), getContactById(book, 2))
   }
 
   @Test def `Getting contacts by ID gives error with random id`: Unit = {
     val book = Contact(1, "John", "1") :: Contact(2, "Sam", "2") :: Nil
-    assertEquals(Left(ContactNotFound), contactId(book, 3))
+    assertEquals(Left(ContactNotFound), getContactById(book, 3))
   }
 
 

@@ -32,23 +32,23 @@ object PhoneBookHandler {
     !number.isBlank
 
 
-  def addContact(book: PhoneBook, contact: ContactRequest): Either[PhoneBookError, PhoneBook] =
-    if (isNameValid(contact.name) & isPhoneValid(contact.phoneNumber))
-      Right(Contact(IdGenerator.next(), contact.name, contact.phoneNumber) :: book)
+  def addContact(book: PhoneBook, body: ContactRequest): Either[PhoneBookError, PhoneBook] =
+    if (isNameValid(body.name) & isPhoneValid(body.phoneNumber))
+      Right(Contact(IdGenerator.next(), body.name, body.phoneNumber) :: book)
     else Left(InvalidInput)
 
 
-  def contactId(book: PhoneBook, id: Long): Either[PhoneBookError, Contact] =
-    book.filter(_.id equals id) match {
+  def getContactById(book: PhoneBook, contactId: Long): Either[PhoneBookError, Contact] =
+    book.filter(_.id equals contactId) match {
       case Nil => Left(ContactNotFound)
       case x :: Nil => Right(x)
     }
 
 
-  def findContactsByName(book: PhoneBook, names: List[String]): Either[PhoneBookError, PhoneBook] = {
-    if (names forall(n => isNameValid(n))) {
+  def findContactsByName(book: PhoneBook, name: List[String]): Either[PhoneBookError, PhoneBook] = {
+    if (name forall(n => isNameValid(n))) {
       val search = for {
-        n <- names
+        n <- name
         x = book.filter(_.name startsWith n)
         if x.nonEmpty
       } yield x
@@ -58,10 +58,10 @@ object PhoneBookHandler {
     else Left(InvalidNameValue)
   }
 
-  def findContactsByPhone(book: PhoneBook, phones: List[String]): Either[PhoneBookError, PhoneBook] = {
-    if (phones forall(p => isPhoneValid(p))) {
+  def findContactsByPhone(book: PhoneBook, phone: List[String]): Either[PhoneBookError, PhoneBook] = {
+    if (phone forall(p => isPhoneValid(p))) {
       val search = for {
-        p <- phones
+        p <- phone
         x = book.filter(_.phoneNumber startsWith p)
         if x.nonEmpty
       } yield x
@@ -71,26 +71,18 @@ object PhoneBookHandler {
     else Left(InvalidPhoneValue)
   }
 
-
-  /*def findContactsByPhone(book: PhoneBook, phone: String): Either[PhoneBookError, PhoneBook] =
-    if (isNumberValid(phone))
-      Right(book.filter(_.phoneNumber contains phone))
-    else Left(InvalidPhoneValue)*/
-
-
-  def updateContact(book: PhoneBook, id: Long, input: ContactRequest): Either[PhoneBookError, PhoneBook] = {
-    book.find(_.id equals id) match {
-      case Some(x) if isNameValid(input.name) & isPhoneValid(input.phoneNumber) =>
-        Right(Contact(id, input.name, input.phoneNumber) :: book.filterNot(_.id equals id))
+  def updateContact(book: PhoneBook, contactId: Long, body: ContactRequest): Either[PhoneBookError, PhoneBook] = {
+    book.find(_.id equals contactId) match {
+      case Some(x) if isNameValid(body.name) & isPhoneValid(body.phoneNumber) =>
+        Right(Contact(contactId, body.name, body.phoneNumber) :: book.filterNot(_.id equals contactId))
       case None => Left(InvalidInput)
       case _ => Left(InvalidInput)
     }
   }
 
-
-  def deleteContact(book: PhoneBook, id: Long): Either[PhoneBookError, PhoneBook] = {
-    book.filter(_.id equals id) match {
-      case x :: Nil => Right(book.filterNot(_.id == id))
+  def deleteContact(book: PhoneBook, contactId: Long): Either[PhoneBookError, PhoneBook] = {
+    book.filter(_.id equals contactId) match {
+      case x :: Nil => Right(book.filterNot(_.id == contactId))
       case x :: xs => Left(InvalidIdSupplied)
       case Nil => Left(ContactNotFound)
     }
