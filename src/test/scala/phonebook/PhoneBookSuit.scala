@@ -116,30 +116,30 @@ class PhoneBookSuit {
   @Test def `Updating contact name works`: Unit = {
     val book = Contact(1, "John", "1") :: Contact(2, "Sam", "2") :: Nil
     val book2 = Contact(2, "Stanley", "2") :: Contact(1, "John", "1") :: Nil
-    assertEquals(Right(book2), updateContact(book, Contact(2, "Stanley", "2")))
+    assertEquals(Right(book2), updateContact(book, 2, ContactRequest("Stanley", "2")))
   }
 
   @Test def `Updating contact phone works`: Unit = {
     val book = Contact(1, "John", "1") :: Contact(2, "Sam", "2") :: Nil
     val book2 = Contact(2, "Sam", "123") :: Contact(1, "John", "1") :: Nil
-    assertEquals(Right(book2), updateContact(book, Contact(2, "Sam", "123")))
+    assertEquals(Right(book2), updateContact(book, 2, ContactRequest("Sam", "123")))
   }
 
   @Test def `Updating contact throws error if name is not valid`: Unit = {
     val book = Contact(1, "John", "1") :: Contact(2, "Sam", "2") :: Nil
     val book2 = Contact(2, "Stanley", "2") :: Contact(1, "John", "1") :: Nil
-    assertEquals(Left(InvalidInput), updateContact(book, Contact(2, "", "23423")))
+    assertEquals(Left(InvalidInput), updateContact(book, 2, ContactRequest("", "23423")))
   }
 
   @Test def `Updating contact throws error if phone is not valid`: Unit = {
     val book = Contact(1, "John", "1") :: Contact(2, "Sam", "2") :: Nil
     val book2 = Contact(2, "Stanley", "2") :: Contact(1, "John", "1") :: Nil
-    assertEquals(Left(InvalidInput), updateContact(book, Contact(2, "Stanley", "")))
+    assertEquals(Left(InvalidInput), updateContact(book, 2, ContactRequest("Stanley", "")))
   }
 
   @Test def `Updating contact throws error if there is no such id`: Unit = {
     val book = Contact(1, "John", "1") :: Contact(2, "Sam", "2") :: Nil
-    assertEquals(Left(InvalidInput), updateContact(book, Contact(3, "Stanley", "2")))
+    assertEquals(Left(InvalidInput), updateContact(book, 3, ContactRequest( "Stanley", "2")))
   }
 
 

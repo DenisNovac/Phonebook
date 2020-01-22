@@ -57,9 +57,10 @@ object PhoneBookHandler {
     else Left(InvalidPhoneValue)
 
 
-  def updateContact(book: PhoneBook, input: Contact): Either[PhoneBookError, PhoneBook] = {
-    book.find(_.id equals input.id) match {
-      case Some(x) if isNameValid(input.name) & isNumberValid(input.phoneNumber) => Right(input :: book.filterNot(_.id equals input.id))
+  def updateContact(book: PhoneBook, id: Long, input: ContactRequest): Either[PhoneBookError, PhoneBook] = {
+    book.find(_.id equals id) match {
+      case Some(x) if isNameValid(input.name) & isNumberValid(input.phoneNumber) =>
+        Right(Contact(id, input.name, input.phoneNumber) :: book.filterNot(_.id equals id))
       case None => Left(InvalidInput)
       case _ => Left(InvalidInput)
     }
