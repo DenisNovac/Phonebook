@@ -14,7 +14,7 @@ class PhoneEntrySuit {
   @Test def `Test entry created by "asJson"`: Unit = {
     val name = "Josh"
     val num = "1"
-    val entry = PhoneEntry(randomUUID(), name, num).asJson
+    val entry = PhoneEntry(1, name, num).asJson
 
     val decoded = entryDecoder.decodeJson(entry)
 

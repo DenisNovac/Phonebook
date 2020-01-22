@@ -15,7 +15,7 @@ object PhoneEntryHandler {
    *  @param name имя владельца телефона
    *  @param phoneNumber телефонный номер
    */
-  case class PhoneEntry(id: UUID, name: String, phoneNumber: String)
+  case class PhoneEntry(id: Long, name: String, phoneNumber: String)
 
 
   implicit val entryEncoder: Encoder[PhoneEntry] = deriveEncoder[PhoneEntry]

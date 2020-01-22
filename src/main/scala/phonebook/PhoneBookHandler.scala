@@ -1,7 +1,5 @@
 package phonebook
 import PhoneEntryHandler.PhoneEntry
-import java.util.UUID.randomUUID
-import java.util.UUID.fromString
 
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, DecodingFailure, Encoder, Json}
@@ -19,17 +17,14 @@ object PhoneBookHandler {
   implicit val bookEncoder: Encoder[PhoneBookModel] = deriveEncoder[PhoneBookModel]
   implicit val bookDecoder: Decoder[PhoneBookModel] = deriveDecoder[PhoneBookModel]
 
-  def bookToJson(book: PhoneBook): Json = PhoneBookModel(book).asJson
+  def listContacts(book: PhoneBook): Json = PhoneBookModel(book).asJson
 
   def jsonToBook(json: Json): Either[DecodingFailure,PhoneBook] = bookDecoder.decodeJson(json) match {
     case Right(PhoneBookModel(items)) => Right(items)
     case Left(e) => Left(e)
   }
 
-
   def createBook(): PhoneBook = Nil
-
-  //def jsonToBook(json: Json): PhoneBook = decoder.decodeJson(json)
 
   def isNameValid(name: String): Boolean =
     !name.isBlank
@@ -38,64 +33,45 @@ object PhoneBookHandler {
     !number.isBlank
 
 
-  def insertEntryToBook(book: PhoneBook, name: String, number: String): Either[PhoneBookError, PhoneBook] =
-    if (!isNameValid(name)) Left(InvalidNameFormat)
-    else if (!isNumberValid(number)) Left(InvalidNumberFormat)
-    else Right(PhoneEntry(randomUUID(),name, number) :: book)
+  def addContact(book: PhoneBook, name: String, number: String): Either[PhoneBookError, PhoneBook] =
+    if (isNameValid(name) & isNumberValid(number))
+      Right(PhoneEntry(IdGenerator.next(), name, number) :: book)
+    else Left(InvalidInput)
 
 
-  def getNameById(book: PhoneBook, uuid: String): Either[PhoneBookError, String] =
-    book.filter(_.id.toString equals uuid) match {
-      case Nil => Left(NoSuchIdInBookError)
-      case x :: Nil => Right(x.name)
-      case x :: xs => Left(MoreThanOneIdError)
+  def contactId(book: PhoneBook, id: Long): Either[PhoneBookError, PhoneEntry] =
+    book.filter(_.id equals id) match {
+      case Nil => Left(ContactNotFound)
+      case x :: Nil => Right(x)
     }
 
 
-  def getPhoneNumberById(book: PhoneBook, uuid: String): Either[PhoneBookError, String] =
-    book.filter(_.id.toString equals uuid) match {
-      case Nil => Left(NoSuchIdInBookError)
-      case x :: Nil => Right(x.phoneNumber)
-      case x :: xs => Left(MoreThanOneIdError)
+  def findContactsByName(book: PhoneBook, name: String): Either[PhoneBookError, PhoneBook] =
+    if (isNameValid(name))
+      Right(book.filter(_.name contains name))
+    else Left(InvalidNameValue)
+
+
+  def findContactsByPhone(book: PhoneBook, number: String): Either[PhoneBookError, PhoneBook] =
+    if (isNumberValid(number))
+      Right(book.filter(_.phoneNumber contains number))
+    else Left(InvalidPhoneValue)
+
+
+  def updateContact(book: PhoneBook, input: PhoneEntry): Either[PhoneBookError, PhoneBook] = {
+    book.find(_.id equals input.id) match {
+      case Some(x) if isNameValid(input.name) & isNumberValid(input.phoneNumber) => Right(input :: book.filterNot(_.id equals input.id))
+      case None => Left(InvalidInput)
+      case _ => Left(InvalidInput)
     }
-
-
-  def getEntriesByPartialName(book: PhoneBook, name: String): PhoneBook =
-    book.filter(_.name contains name)
-
-
-  def getEntriesByPartialNumber(book: PhoneBook, number: String): PhoneBook =
-    book.filter(_.phoneNumber contains number)
-
-
-  def changeNameById(book: PhoneBook, uuid: String, newName: String): Either[PhoneBookError, PhoneBook] = {
-    if (!isNameValid(newName)) Left(InvalidNameFormat)
-    else
-      book.filter(_.id.toString equals uuid) match {
-        case Nil => Left(NoSuchIdInBookError)
-        case x :: Nil =>
-          Right(PhoneEntry(fromString(uuid), newName, x.phoneNumber) :: book.filterNot(_.id.toString equals uuid))
-        case x :: xs => Left(MoreThanOneIdError)
-      }
   }
 
 
-  def changePhoneNumberById(book: PhoneBook, uuid: String, newNumber: String): Either[PhoneBookError, PhoneBook] = {
-    if (!isNameValid(newNumber)) Left(InvalidNumberFormat)
-    else
-      book.filter(_.id.toString equals uuid) match {
-        case Nil => Left(NoSuchIdInBookError)
-        case x :: Nil =>
-          Right(PhoneEntry(fromString(uuid), x.name, newNumber) :: book.filterNot(_.id.toString equals uuid))
-        case x :: xs => Left(MoreThanOneIdError)
-      }
-  }
-
-
-  def removeEntryFromBookById(book: PhoneBook, uuid: String): Either[PhoneBookError, PhoneBook] = {
-    book.find(_.id.toString equals uuid) match {
-      case None => Left(NoSuchIdInBookError)
-      case Some(x) => Right(book.filterNot(_.id.toString == uuid))
+  def deleteContact(book: PhoneBook, id: Long): Either[PhoneBookError, PhoneBook] = {
+    book.filter(_.id equals id) match {
+      case x :: Nil => Right(book.filterNot(_.id == id))
+      case x :: xs => Left(InvalidIdSupplied)
+      case Nil => Left(ContactNotFound)
     }
   }
 }
