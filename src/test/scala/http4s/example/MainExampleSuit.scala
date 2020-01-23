@@ -36,6 +36,13 @@ class MainExampleSuit {
     assertEquals(contact, response)
   }
 
+  @Test def `Get 404 on invalid request`: Unit = {
+    val request = Request[IO](GET, uri"/help_me_please")
+    val io = MainExample.indexService.orNotFound.run(request)
+    val response = io.unsafeRunSync
+    assertEquals(NotFound, response.status)
+  }
+
 
 
 }
