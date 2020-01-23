@@ -6,7 +6,6 @@ import org.junit.Assert._
 import io.circe.syntax._
 import phonebook.ContactHandler.Contact
 import phonebook.ContactHandler.contactDecoder
-import java.util.UUID.randomUUID
 
 
 class ContactSuit {
