@@ -1,0 +1,29 @@
+version: "3"
+
+services:
+
+  phonebook:
+    container_name: phonebook
+    build: .
+    networks:
+      overlay:
+        ipv4_address: 172.18.1.2
+    ports:
+      - "9000:9000"
+
+  swagger-editor:
+    container_name: swagger
+    image: swaggerapi/swagger-editor
+    networks:
+      overlay:
+        ipv4_address: 172.18.1.3
+    ports:
+      - "80:8080"
+
+networks:
+  overlay:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.18.1.0/24

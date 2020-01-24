@@ -38,12 +38,10 @@ object MainExample extends IOApp {
 
   def run(args: List[String]): IO[ExitCode] =
     BlazeServerBuilder[IO]
-      .bindHttp(8080, "localhost")
+      .bindHttp(9000, "172.18.1.2")
       .withHttpApp(httpApp)
       .serve
       .compile
       .drain
       .as(ExitCode.Success)
-
-
 }
