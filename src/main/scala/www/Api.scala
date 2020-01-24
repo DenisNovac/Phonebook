@@ -1,0 +1,5 @@
+package www
+
+object Api {
+
+}
