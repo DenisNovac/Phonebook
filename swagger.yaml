@@ -25,7 +25,7 @@ paths:
       produces:
       - "application/json"
       responses:
-        405:
+        400:
           description: "Invalid input"      
       parameters:
       - in: "body"
@@ -140,7 +140,7 @@ paths:
       produces:
       - "application/json"
       responses:
-        405:
+        400:
           description: "Invalid input"      
       parameters:
       - name: "contactId"
