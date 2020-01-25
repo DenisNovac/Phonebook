@@ -33,6 +33,7 @@ object HttpIoBookHandler {
     val book = getBook()
     addContact(book, c) match {
       case Left(InvalidInput) => BadRequest("Invalid input")  // 400
+      case Left(_) => InternalServerError()
       case Right(x) =>
         updateRef(x)
         Ok(PhoneBookModel(getBook()).asJson)
@@ -47,6 +48,7 @@ object HttpIoBookHandler {
     val book = getBook()
     findContactsByName(book, name) match {
       case Left(InvalidNameValue) => BadRequest("Invalid name value")  // 400
+      case Left(_) => InternalServerError()
       case Right(x) => Ok(PhoneBookModel(x).asJson)
     }
   }
@@ -55,6 +57,7 @@ object HttpIoBookHandler {
     val book = getBook()
     findContactsByPhone(book, phone) match {
       case Left(InvalidPhoneValue) => BadRequest("Invalid phone value")  // 400
+      case Left(_) => InternalServerError()
       case Right(x) => Ok(PhoneBookModel(x).asJson)
     }
   }
@@ -63,6 +66,7 @@ object HttpIoBookHandler {
     val book = getBook()
     getContactById(book, id) match {
       case Left(ContactNotFound) => NotFound("Contact not found")  // 404
+      case Left(_) => InternalServerError()
       case Right(x) => Ok(x.asJson)
     }
   }
@@ -71,6 +75,7 @@ object HttpIoBookHandler {
     val book = getBook()
     updateContact(book, id, body) match {
       case Left(InvalidInput) => BadRequest("Invalid input")  // 400
+      case Left(_) => InternalServerError()
       case Right(x) =>
         updateRef(x)
         Ok(PhoneBookModel(getBook()).asJson)
@@ -82,6 +87,7 @@ object HttpIoBookHandler {
     deleteContact(book, id) match {
       case Left(InvalidIdSupplied) => BadRequest("Invalid ID supplied")  // 400
       case Left(ContactNotFound) => NotFound("Contact not found")  // 404
+      case Left(_) => InternalServerError()
       case Right(x) =>
         updateRef(x)
         Ok(PhoneBookModel(getBook()).asJson)
