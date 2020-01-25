@@ -13,6 +13,7 @@ object Phonebook extends IOApp{
 
   val port = 9000
   val host = "172.18.1.2"
+  //val host = "localhost"
 
   val calls = indexCall <+> addContact
   val apiCalls: Kleisli[IO, Request[IO], Response[IO]] = Router("/" -> calls).orNotFound
