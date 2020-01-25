@@ -24,16 +24,61 @@ object HttpIoBookHandler {
 
   private def getBook(): PhoneBook = phonebookIo.get.unsafeRunSync()
 
-  def addContactIO(c: ContactRequest): IO[Response[IO]] = {
+  def addContactIo(c: ContactRequest): IO[Response[IO]] = {
     val book = getBook()
     addContact(book, c) match {
-      case Left(x) => BadRequest()  // TODO: Нужен 405 вместо 400
+      case Left(x) => BadRequest("Invalid input")  // TODO: Нужен 405 вместо 400
       case Right(x) =>
         updateRef(x)
         Ok(PhoneBookModel(getBook()).asJson)
     }
   }
 
+  def listContactsIo(): IO[Response[IO]] = {
+    Ok(PhoneBookModel(getBook()).asJson)
+  }
 
+  def findContactByNameIo(name: List[String]): IO[Response[IO]] = {
+    val book = getBook()
+    findContactsByName(book, name) match {
+      case Left(x) => BadRequest("Invalid name value")
+      case Right(x) => Ok(PhoneBookModel(x).asJson)
+    }
+  }
 
+  def findContactByPhoneIo(phone: List[String]): IO[Response[IO]] = {
+    val book = getBook()
+    findContactsByPhone(book, phone) match {
+      case Left(x) => BadRequest("Invalid phone value")
+      case Right(x) => Ok(PhoneBookModel(x).asJson)
+    }
+  }
+
+  def getContactByIdIo(id: Long): IO[Response[IO]] = {
+    val book = getBook()
+    getContactById(book, id) match {
+      case Left(x) => BadRequest("Invalid phone value")
+      case Right(x) => Ok(x.asJson)
+    }
+  }
+
+  def updateContactIo(id: Long, body: ContactRequest): IO[Response[IO]] = {
+    val book = getBook()
+    updateContact(book, id, body) match {
+      case Left(x) => NotFound()
+      case Right(x) =>
+        updateRef(x)
+        Ok(PhoneBookModel(getBook()).asJson)
+    }
+  }
+
+  def deleteContactIo(id: Long): IO[Response[IO]] = {
+    val book = getBook()
+    deleteContact(book, id) match {
+      case Left(x) =>BadRequest()  // TODO: Возврат 400 ИЛИ 404
+      case Right(x) =>
+        updateRef(x)
+        Ok(PhoneBookModel(getBook()).asJson)
+    }
+  }
 }

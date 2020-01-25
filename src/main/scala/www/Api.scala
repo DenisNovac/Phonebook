@@ -24,7 +24,7 @@ object Api {
     case req @ POST -> Root / "contact" =>
       for {
         contactRequest <- req.as[ContactRequest]
-        resp <- addContactIO(contactRequest)
+        resp <- addContactIo(contactRequest)
       } yield resp
   }
 
