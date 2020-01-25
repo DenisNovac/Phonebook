@@ -9,7 +9,7 @@ import Api._
 import cats.data.Kleisli
 import org.http4s.{Request, Response}
 
-object Phonebook extends IOApp{
+object PhoneBook extends IOApp{
 
   val port = 9000
   val host = "172.18.1.2"
