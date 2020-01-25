@@ -2,30 +2,34 @@ package www
 
 import cats.effect._
 import cats.implicits._
-
 import org.http4s.server.Router
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.implicits._
-import Api._
+import org.http4s.server.middleware.Logger
+//import org.http4s.server.middleware.{Logger, RequestLogger, ResponseLogger}
+
 import scala.concurrent.ExecutionContext.Implicits.global
+import Api._
 
 object PhoneBook extends IOApp{
+  implicit val cs: ContextShift[IO] = IO.contextShift(global)
 
   val port = 9000
-  val host = "172.18.1.2"
-  //val host = "localhost"
+  //val host = "172.18.1.2"
+  val host = "localhost"
 
   val calls = indexCall <+> addContact <+> listContacts <+> findContactsByName <+> findContactsByPhone <+>
     getContactById <+> updateContact <+> deleteContact <+> apiCall
-  val apiCalls = Router("/" -> calls).orNotFound
-  val wrapper = CorsApiWrapper(apiCalls)
 
-  //override implicit val timer: Timer[IO] = IO.timer(global)
-  implicit val cs: ContextShift[IO] = IO.contextShift(global)
+  val api = Router("/" -> calls).orNotFound
+  val corsWrappedApi = CorsApiWrapper(api)
+  val loggedApi = Logger.httpApp(true, true)(corsWrappedApi)
+
+
   override def run(args: List[String]): IO[ExitCode] =
     BlazeServerBuilder[IO]
       .bindHttp(port, host)
-      .withHttpApp(wrapper)
+      .withHttpApp(loggedApi)
       .serve
       .compile
       .drain

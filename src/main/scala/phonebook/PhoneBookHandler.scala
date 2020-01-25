@@ -42,6 +42,7 @@ object PhoneBookHandler {
     book.filter(_.id equals contactId) match {
       case Nil => Left(ContactNotFound)
       case x :: Nil => Right(x)
+      case x :: xs => Left(UnknownError)
     }
 
 
