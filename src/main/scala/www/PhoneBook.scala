@@ -6,8 +6,7 @@ import org.http4s.server.Router
 import org.http4s.server.blaze.BlazeServerBuilder
 import org.http4s.implicits._
 import Api._
-import cats.data.Kleisli
-import org.http4s.{Request, Response}
+
 
 object PhoneBook extends IOApp{
 
@@ -15,8 +14,10 @@ object PhoneBook extends IOApp{
   val host = "172.18.1.2"
   //val host = "localhost"
 
-  val calls = indexCall <+> addContact
-  val apiCalls: Kleisli[IO, Request[IO], Response[IO]] = Router("/" -> calls).orNotFound
+  val calls = indexCall <+> addContact <+> listContacts <+> findContactsByName <+> findContactsByPhone <+>
+    getContactById <+> updateContact <+> deleteContact
+
+  val apiCalls = Router("/" -> calls).orNotFound
   val wrapper = CorsApiWrapper(apiCalls)
 
   override def run(args: List[String]): IO[ExitCode] =
