@@ -11,14 +11,25 @@ services:
     ports:
       - "9000:9000"
 
-  swagger-editor:
-    container_name: swagger
-    image: swaggerapi/swagger-editor
+  swagger-ui:
+    container_name: swagger-ui
+    image: swaggerapi/swagger-ui
     networks:
       overlay:
         ipv4_address: 172.18.1.3
     ports:
       - "80:8080"
+    environment:
+      - URL=http://172.18.1.2:9000/api
+
+#  swagger-editor:
+#    container_name: swagger-ed
+#    image: swaggerapi/swagger-editor
+#    networks:
+#      overlay:
+#        ipv4_address: 172.18.1.3
+#    ports:
+#      - "8080:8080"
 
 networks:
   overlay:

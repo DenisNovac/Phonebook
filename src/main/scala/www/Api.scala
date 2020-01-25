@@ -1,14 +1,17 @@
 package www
 
 import cats.effect._
-
-import org.http4s.HttpRoutes
+import cats.implicits._
+import org.http4s._
 import org.http4s.dsl.io._
 import org.http4s.circe._
-
 import phonebook.ContactHandler._
 import HttpIoBookHandler._
 
+import scala.concurrent.ExecutionContext
+
+import java.io.File
+import java.util.concurrent._
 
 object Api {
   implicit val requestDecoder = jsonOf[IO, ContactRequest]
@@ -17,6 +20,13 @@ object Api {
   val indexCall = HttpRoutes.of[IO] {
     case GET -> Root =>
       Ok("Phonebook OK")
+  }
+
+  val blockingEc = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(4))
+  implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+  val apiCall = HttpRoutes.of[IO] {
+    case req @ GET -> Root / "api" =>
+      StaticFile.fromFile(new File("swagger.yaml"), blockingEc, Some(req)).getOrElseF(NotFound())
   }
 
   // Добавить телефон и имя в справочник
