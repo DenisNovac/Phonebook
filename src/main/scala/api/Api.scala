@@ -10,9 +10,8 @@ import java.io.File
 import java.util.concurrent._
 
 import share.ContactModel._
-import api.handlers.IoCollectionBookHandler._
-import org.log4s._
-
+import api.handlers.IoCollectionPhoneBookHandler
+import api.handlers.IoDbPhoneBookHandler
 
 object Api {
   /** Декодер реквестов в JSON формата ContactRequest */
@@ -27,6 +26,10 @@ object Api {
       StaticFile.fromFile(new File("swagger.yaml"), blockingEc, Some(req)).getOrElseF(NotFound())
   }
 
+  /** Текущий хендлер */
+  //private val handler = IoCollectionPhoneBookHandler
+  private val handler = new IoDbPhoneBookHandler
+
 
 
 
@@ -40,7 +43,7 @@ object Api {
     case req @ POST -> Root / "contact" =>
       for {
         contactRequest <- req.as[ContactRequest]
-        resp <- addContactIo(contactRequest)
+        resp <- handler.addContactIo(contactRequest)
       } yield resp
   }
 
@@ -48,7 +51,7 @@ object Api {
   val listContacts = HttpRoutes.of[IO] {
     case GET -> Root / "contacts" =>
       for {
-        resp <- listContactsIo()
+        resp <- handler.listContactsIo()
       } yield resp
   }
 
@@ -57,7 +60,7 @@ object Api {
   val findContactsByName = HttpRoutes.of[IO] {
     case  GET -> Root / "contact" / "findByName" :? NameParser(name) =>
       for {
-        resp <- findContactByNameIo(name.split(",").toList)
+        resp <- handler.findContactByNameIo(name.split(",").toList)
       } yield resp
   }
 
@@ -66,7 +69,7 @@ object Api {
   val findContactsByPhone = HttpRoutes.of[IO] {
     case  GET -> Root / "contact" / "findByPhone" :? PhoneParser(phone) =>
       for {
-        resp <- findContactByPhoneIo(phone.split(",").toList)
+        resp <- handler.findContactByPhoneIo(phone.split(",").toList)
       } yield resp
   }
 
@@ -74,7 +77,7 @@ object Api {
   val getContactById = HttpRoutes.of[IO] {
     case GET -> Root / "contact" / contactId =>
       for {
-        resp <- getContactByIdIo(contactId.toLong)
+        resp <- handler.getContactByIdIo(contactId.toLong)
       } yield resp
   }
 
@@ -83,7 +86,7 @@ object Api {
     case req @ PUT -> Root / "contact" / contactId =>
       for {
         contactRequest <- req.as[ContactRequest]
-        resp <- updateContactIo(contactId.toLong, contactRequest)
+        resp <- handler.updateContactIo(contactId.toLong, contactRequest)
       } yield resp
   }
 
@@ -91,7 +94,7 @@ object Api {
   val deleteContact = HttpRoutes.of[IO] {
     case DELETE -> Root / "contact" / contactId =>
       for {
-        resp <- deleteContactIo(contactId.toLong)
+        resp <- handler.deleteContactIo(contactId.toLong)
       } yield resp
   }
 
