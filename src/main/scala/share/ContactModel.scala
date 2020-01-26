@@ -1,9 +1,9 @@
-package phonebook
+package share
 
+import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, Encoder}
-import io.circe.generic.semiauto.{deriveEncoder, deriveDecoder}
 
-object ContactHandler {
+object ContactModel {
 
 
   /** Модель для телефонных записей, которая содержит необходимые поля для JSON-а.

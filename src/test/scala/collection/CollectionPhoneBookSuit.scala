@@ -1,19 +1,12 @@
-package phonebook
+package collection
 
-import org.junit._
+import collection.CollectionPhoneBookHandler._
 import org.junit.Assert._
-import phonebook.PhoneBookHandler._
-import phonebook.ContactHandler._
+import org.junit._
+import share.ContactModel._
+import share._
 
-class PhoneBookSuit {
-
-  @Test def `Empty name is not valid`: Unit = {
-    assertFalse(isNameValid(""))
-  }
-
-  @Test def `Empty number is not valid`: Unit = {
-    assertFalse(isPhoneValid(""))
-  }
+class CollectionPhoneBookSuit {
 
   @Test def `Insert empty name is not possible`: Unit = {
     val result = addContact(createBook(), ContactRequest("", "12345"))

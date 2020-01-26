@@ -1,4 +1,4 @@
-package www
+package api
 
 import cats.effect._
 import org.http4s._
@@ -9,8 +9,8 @@ import scala.concurrent.ExecutionContext
 import java.io.File
 import java.util.concurrent._
 
-import phonebook.ContactHandler._
-import HttpIoBookHandler._
+import share.ContactModel._
+import api.handlers.IoCollectionBookHandler._
 import org.log4s._
 
 

@@ -1,4 +1,4 @@
-package phonebook
+package collection
 
 import java.util.concurrent.atomic.AtomicLong
 

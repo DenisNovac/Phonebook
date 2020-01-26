@@ -1,4 +1,4 @@
-package www
+package api
 
 import cats.data.Kleisli
 import cats.effect._

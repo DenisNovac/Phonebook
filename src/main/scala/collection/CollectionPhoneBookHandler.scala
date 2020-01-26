@@ -1,20 +1,14 @@
-package phonebook
-import ContactHandler.{Contact, ContactRequest}
+package collection
+import share.ContactModel.{Contact, ContactRequest}
 import io.circe.generic.semiauto.{deriveDecoder, deriveEncoder}
 import io.circe.{Decoder, DecodingFailure, Encoder, Json}
 import io.circe.syntax._
+import share.PhoneBookModel.{PhoneBook, PhoneBookModel}
+import share.PhoneBookModel._
+import share.InputValidator._
+import share.{ContactNotFound, InvalidIdSupplied, InvalidInput, InvalidNameValue, InvalidPhoneValue, PhoneBookError, UnknownError}
 
-object PhoneBookHandler {
-
-  type PhoneBook = List[Contact]
-
-  /** Модель JSON для телефонной книги. Рядом находятся энкодер и декодер для
-   *  преобразования в JSON или обратно
-   *  @param items телефонная книга, которую требуется вывести в JSON
-   */
-  case class PhoneBookModel(items: PhoneBook)
-  implicit val bookEncoder: Encoder[PhoneBookModel] = deriveEncoder[PhoneBookModel]
-  implicit val bookDecoder: Decoder[PhoneBookModel] = deriveDecoder[PhoneBookModel]
+object CollectionPhoneBookHandler {
 
   def listContacts(book: PhoneBook): Json = PhoneBookModel(book).asJson
 
@@ -24,13 +18,6 @@ object PhoneBookHandler {
   }
 
   def createBook(): PhoneBook = Nil
-
-  def isNameValid(name: String): Boolean =
-    !name.isBlank
-
-  def isPhoneValid(number: String): Boolean =
-    !number.isBlank
-
 
   def addContact(book: PhoneBook, body: ContactRequest): Either[PhoneBookError, PhoneBook] =
     if (isNameValid(body.name) & isPhoneValid(body.phoneNumber))
