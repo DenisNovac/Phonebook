@@ -18,8 +18,8 @@ object PhoneBook extends IOApp{
   implicit val cs: ContextShift[IO] = IO.contextShift(global)
 
   val port = 9000
-  //val host = "172.18.1.2"
-  val host = "localhost"
+  val host = "172.18.1.2"
+  //val host = "localhost"
 
   val calls = indexCall <+> addContact <+> listContacts <+> findContactsByName <+> findContactsByPhone <+>
     getContactById <+> updateContact <+> deleteContact <+> apiCall

@@ -30,6 +30,9 @@ object Api {
   //private val handler = IoCollectionPhoneBookHandler
   private val handler = new IoDbPhoneBookHandler
 
+
+
+
   val indexCall = HttpRoutes.of[IO] {
     case req @ GET -> Root =>
       Ok("Phonebook OK")

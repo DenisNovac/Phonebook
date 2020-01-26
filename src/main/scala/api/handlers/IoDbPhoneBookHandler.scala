@@ -1,16 +1,32 @@
 package api.handlers
 
+import cats._
+import cats.data._
+import cats.effect._
+import cats.effect.IO
+import cats.effect.implicits._
+
 import doobie._
 import doobie.implicits._
 import doobie.util.compat._
 import doobie.postgres.implicits._
 import doobie.util.ExecutionContexts
-import cats.effect.IO
+
+import io.circe.syntax._
+import org.http4s.circe._
 import org.http4s.Response
+import org.http4s.dsl.io._
 import org.postgresql.util.PSQLException
-import share.ContactModel
+
 import org.log4s
 import java.sql.SQLTimeoutException
+import scala.annotation.tailrec
+
+import share.PhoneBookModel._
+import share.ContactModel._
+import share.InputValidator._
+
+
 
 /** Класс, в котором собраны методы для работы с БД PostgreSQL (через Doobie).
   * Может заменять собой IoCollectionPhoneBookHandler ввиду одного интерфейса.
@@ -22,8 +38,8 @@ class IoDbPhoneBookHandler extends ApiPhoneBookHandler {
   private implicit val cs = IO.contextShift(ExecutionContexts.synchronous)
 
   private val driver = "org.postgresql.Driver"
-  //private val connectionString = "jdbc:postgresql:172.18.1.10:postgres"
-  private val connectionString = "jdbc:postgresql:postgres"
+  private val connectionString = "jdbc:postgresql://172.18.1.10:5432/postgres"
+  //private val connectionString = "jdbc:postgresql:postgres"  // localhost
   private val user = "postgres"
   private val pass = "P@ssw0rd"
 
@@ -32,9 +48,13 @@ class IoDbPhoneBookHandler extends ApiPhoneBookHandler {
   /** При создании этого класса будет автоматически создана нужная таблица.
     * Если БД недоступна - будет предпринято несколько попыток достучаться до неё.
     */
-  private val initTable = waitDb(1)
+  private val initTable = waitDb()
 
-  private def waitDb(attempt: Int): Unit = {
+  /** Функция-цикл для попыток переподключений к БД через интервалы времени.
+    * @param attempt номер первой попытки
+    */
+  @tailrec
+  private def waitDb(attempt: Int = 1): Unit = {
     val maxRetries = 10
     val retryTimeMs = 5000
 
@@ -55,11 +75,27 @@ class IoDbPhoneBookHandler extends ApiPhoneBookHandler {
   }
 
 
+  private def getBook(): PhoneBook =
+    sql"SELECT * FROM phonebook"
+      .query[Contact]
+      .to[List]
+      .transact(tr)
+      .unsafeRunSync()
 
 
-  override def addContactIo(c: ContactModel.ContactRequest): IO[Response[IO]] = ???
+  override def addContactIo(c: ContactRequest): IO[Response[IO]] = {
+    if (isNameValid(c.name) & isPhoneValid(c.phoneNumber)) {
+      sql"INSERT INTO phonebook (name, phoneNumber) VALUES (${c.name}, ${c.phoneNumber})"
+        .update
+        .run
+        .transact(tr)
+        .unsafeRunSync()
+      Ok(PhoneBookModel(getBook()).asJson)
+    } else BadRequest("Invalid input")
+  }
 
-  override def listContactsIo(): IO[Response[IO]] = ???
+  override def listContactsIo(): IO[Response[IO]] =
+    Ok(PhoneBookModel(getBook()).asJson)
 
   override def findContactByNameIo(name: List[String]): IO[Response[IO]] = ???
 
@@ -67,7 +103,7 @@ class IoDbPhoneBookHandler extends ApiPhoneBookHandler {
 
   override def getContactByIdIo(id: Long): IO[Response[IO]] = ???
 
-  override def updateContactIo(id: Long, body: ContactModel.ContactRequest): IO[Response[IO]] = ???
+  override def updateContactIo(id: Long, body: ContactRequest): IO[Response[IO]] = ???
 
   override def deleteContactIo(id: Long): IO[Response[IO]] = ???
 }
