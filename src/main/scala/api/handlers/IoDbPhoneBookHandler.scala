@@ -170,4 +170,20 @@ class IoDbPhoneBookHandler(host: String, port: String, db: String,
     }
   }
 
+
+
+  /** Для тестов */
+  def resetTable(): Unit = {
+    sql"DROP TABLE IF EXISTS phonebook"
+      .update
+      .run
+      .transact(tr)
+      .unsafeRunSync()
+    sql"CREATE TABLE IF NOT EXISTS phonebook (id SERIAL PRIMARY KEY,name VARCHAR(100) NOT NULL,phoneNumber VARCHAR(100) NOT NULL);"
+      .update
+      .run
+      .transact(tr)
+      .unsafeRunSync()
+  }
+
 }

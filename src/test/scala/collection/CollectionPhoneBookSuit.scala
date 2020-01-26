@@ -22,7 +22,7 @@ class CollectionPhoneBookSuit {
     val name = "James Sunderland"
     val phone = "883-223"
     val result = addContact(createBook(), ContactRequest(name, phone))
-    assertEquals(Right(List(Contact(0, name, phone))), result)
+    assertEquals(Right(List(Contact(1, name, phone))), result)
   }
 
 
