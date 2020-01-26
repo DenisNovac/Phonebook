@@ -1,4 +1,4 @@
-package phonebook
+package share
 
 sealed trait PhoneBookError
 

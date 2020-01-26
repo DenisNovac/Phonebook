@@ -1,16 +1,20 @@
-package www
+package api.handlers
 
 import cats.effect.IO
 import cats.effect.concurrent.Ref
-import io.circe.syntax._
 import org.http4s.Response
 import org.http4s.dsl.io._
 import org.http4s.circe._
-import phonebook.ContactHandler._
-import phonebook.PhoneBookHandler._
-import phonebook.{ContactNotFound, InvalidIdSupplied, InvalidInput, InvalidNameValue, InvalidPhoneValue}
+import io.circe.syntax._
 
-object HttpIoBookHandler {
+
+import share.{InvalidPhoneValue, InvalidNameValue, InvalidInput, InvalidIdSupplied, ContactNotFound}
+import share.ContactModel._
+import share.PhoneBookModel.{bookEncoder, bookDecoder, PhoneBook, PhoneBookModel}
+import collection.CollectionPhoneBookHandler._
+
+
+object IoCollectionBookHandler extends ApiPhoneBookHandler {
 
   // базовая телефонная книга, ссылка на которую будет меняться
   private val phonebookIo: Ref[IO, List[Contact]] = Ref.of[IO, List[Contact]](List()).unsafeRunSync()
