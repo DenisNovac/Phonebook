@@ -97,13 +97,77 @@ class IoDbPhoneBookHandler extends ApiPhoneBookHandler {
   override def listContactsIo(): IO[Response[IO]] =
     Ok(PhoneBookModel(getBook()).asJson)
 
-  override def findContactByNameIo(name: List[String]): IO[Response[IO]] = ???
+  override def findContactByNameIo(name: List[String]): IO[Response[IO]] = {
+    if (name forall(n => isNameValid(n))) {
+      val found = for {
+        n <- name
+        r <- sql"SELECT * FROM phonebook WHERE name LIKE ${n+"%"}"
+              .query[Contact]
+              .to[List]
+              .transact(tr)
+              .unsafeRunSync()
+      } yield r
 
-  override def findContactByPhoneIo(phone: List[String]): IO[Response[IO]] = ???
+      Ok(PhoneBookModel(found).asJson)
 
-  override def getContactByIdIo(id: Long): IO[Response[IO]] = ???
+    } else BadRequest("Invalid name value")
+  }
 
-  override def updateContactIo(id: Long, body: ContactRequest): IO[Response[IO]] = ???
 
-  override def deleteContactIo(id: Long): IO[Response[IO]] = ???
+  override def findContactByPhoneIo(phone: List[String]): IO[Response[IO]] = {
+    if (phone forall(n => isNameValid(n))) {
+      val found = for {
+        p <- phone
+        r <- sql"SELECT * FROM phonebook WHERE phoneNumber LIKE ${p+"%"}"
+          .query[Contact]
+          .to[List]
+          .transact(tr)
+          .unsafeRunSync()
+      } yield r
+
+      Ok(PhoneBookModel(found).asJson)
+
+    } else BadRequest("Invalid phone value")
+  }
+
+  override def getContactByIdIo(id: Long): IO[Response[IO]] = {
+    val found = sql"SELECT * FROM phonebook WHERE id = $id"
+                  .query[Contact]
+                  .option
+                  .transact(tr)
+                  .unsafeRunSync()
+    found match {
+      case Some(x) =>Ok(x.asJson)
+      case None => NotFound("Contact not found")
+    }
+  }
+
+
+  override def updateContactIo(id: Long, body: ContactRequest): IO[Response[IO]] = {
+    if (isNameValid(body.name) & isPhoneValid(body.phoneNumber)) {
+      val res = sql"UPDATE phonebook SET name=${body.name}, phoneNumber=${body.phoneNumber} WHERE id=${id}"
+        .update
+        .run
+        .transact(tr)
+        .unsafeRunSync()
+      res match {
+        case 1 => Ok(PhoneBookModel(getBook()).asJson)
+        case 0 => NotFound("Contact not found")
+      }
+    } else BadRequest("Invalid input")
+  }
+
+
+  override def deleteContactIo(id: Long): IO[Response[IO]] = {
+    val res = sql"DELETE FROM phonebook WHERE id=${id}"
+      .update
+      .run
+      .transact(tr)
+      .unsafeRunSync()
+    res match {
+      case 1 => Ok(PhoneBookModel(getBook()).asJson)
+      case 0 => NotFound("Contact not found")
+    }
+  }
+
 }
