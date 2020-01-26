@@ -13,10 +13,14 @@ import share.ContactModel._
 import share.PhoneBookModel.{bookEncoder, bookDecoder, PhoneBook, PhoneBookModel}
 import collection.CollectionPhoneBookHandler._
 
+import org.log4s._
+
 /** Класс, в котором собраны методы для обращения к CollectionPhoneBookHandler
   * Является обёрткой над ними, позволяющей менять состояние справочника, заключённое в одной переменной.
   */
-object IoCollectionPhoneBookHandler extends ApiPhoneBookHandler {
+class IoCollectionPhoneBookHandler extends ApiPhoneBookHandler {
+  private val logger = getLogger("IoCollectionPhoneBookHandler")
+  logger.info("initialized in-memory storage")
 
   // базовая телефонная книга, ссылка на которую будет меняться
   private val phonebookIo: Ref[IO, List[Contact]] = Ref.of[IO, List[Contact]](List()).unsafeRunSync()
@@ -27,7 +31,10 @@ object IoCollectionPhoneBookHandler extends ApiPhoneBookHandler {
   } yield()
 
   // метод, исполняющий процесс IO для замены ссылки в phonebookIo
-  private def updateRef(newBook: PhoneBook): Unit = updateRefIo(newBook).unsafeRunSync()
+  private def updateRef(newBook: PhoneBook): Unit = {
+    updateRefIo(newBook).unsafeRunSync()
+    logger.info("Ref to phonebookIo updated")
+  }
 
   // перевод IO-содержимого в иммутабельный лист
   private def getBook(): PhoneBook = phonebookIo.get.unsafeRunSync()

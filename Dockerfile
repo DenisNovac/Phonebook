@@ -4,7 +4,7 @@ RUN mkdir -p /opt/app
 
 WORKDIR /opt/app
 
-COPY ./run_jar.sh ./target/scala-2.12/Phonebook-assembly-0.1.jar ./swagger.yaml ./
+COPY ./application.conf ./run_jar.sh ./target/scala-2.12/Phonebook-assembly-0.1.jar ./swagger.yaml ./
 
 RUN chmod +x ./run_jar.sh
 

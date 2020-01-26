@@ -43,3 +43,6 @@ libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % Test
 
 testOptions in Test += Tests.Argument(TestFrameworks.JUnit, "-a", "-v", "-s")
 scalacOptions ++= Seq("-Ypartial-unification")
+
+
+libraryDependencies += "com.github.pureconfig" %% "pureconfig" % "0.12.2"  // чтение конфига
