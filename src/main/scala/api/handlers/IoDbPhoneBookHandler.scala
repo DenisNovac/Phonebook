@@ -31,19 +31,19 @@ import share.InputValidator._
 /** Класс, в котором собраны методы для работы с БД PostgreSQL (через Doobie).
   * Может заменять собой IoCollectionPhoneBookHandler ввиду одного интерфейса.
   */
-class IoDbPhoneBookHandler extends ApiPhoneBookHandler {
+class IoDbPhoneBookHandler(host: String, port: String, db: String,
+                           user: String, password: String ) extends ApiPhoneBookHandler {
+
   private val logger = log4s.getLogger("IoDbPhoneBookHandler")
 
   /** Контекст для транзактора */
   private implicit val cs = IO.contextShift(ExecutionContexts.synchronous)
 
   private val driver = "org.postgresql.Driver"
-  private val connectionString = "jdbc:postgresql://172.18.1.10:5432/postgres"
-  //private val connectionString = "jdbc:postgresql:postgres"  // localhost
-  private val user = "postgres"
-  private val pass = "P@ssw0rd"
+  private val connectionString = s"jdbc:postgresql://$host:$port/$db"
+  //private val connectionString = "jdbc:postgresql://172.18.1.10:5432/postgres"
 
-  private lazy val tr = Transactor.fromDriverManager[IO](driver, connectionString, user, pass)
+  private lazy val tr = Transactor.fromDriverManager[IO](driver, connectionString, user, password)
 
   /** При создании этого класса будет автоматически создана нужная таблица.
     * Если БД недоступна - будет предпринято несколько попыток достучаться до неё.

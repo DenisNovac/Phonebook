@@ -10,10 +10,11 @@ import java.io.File
 import java.util.concurrent._
 
 import share.ContactModel._
-import api.handlers.IoCollectionPhoneBookHandler
-import api.handlers.IoDbPhoneBookHandler
+import api.handlers.{ApiPhoneBookHandler, IoCollectionPhoneBookHandler, IoDbPhoneBookHandler}
 
-object Api {
+
+
+class Api (handler: ApiPhoneBookHandler) {
   /** Декодер реквестов в JSON формата ContactRequest */
   implicit lazy val requestDecoder = jsonOf[IO, ContactRequest]
 
@@ -25,11 +26,6 @@ object Api {
     case req @ GET -> Root / "api" =>
       StaticFile.fromFile(new File("swagger.yaml"), blockingEc, Some(req)).getOrElseF(NotFound())
   }
-
-  /** Текущий хендлер */
-  //private val handler = IoCollectionPhoneBookHandler
-  private val handler = new IoDbPhoneBookHandler
-
 
 
 
