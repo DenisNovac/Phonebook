@@ -5,6 +5,8 @@ services:
   phonebook:
     container_name: phonebook
     build: .
+    depends_on:
+      - db
     networks:
       overlay:
         ipv4_address: 172.18.1.2
@@ -14,6 +16,8 @@ services:
   swagger-ui:
     container_name: swagger-ui
     image: swaggerapi/swagger-ui
+    depends_on:
+      - phonebook
     networks:
       overlay:
         ipv4_address: 172.18.1.3
@@ -21,6 +25,19 @@ services:
       - "80:8080"
     environment:
       - URL=http://172.18.1.2:9000/api
+
+  db:
+    container_name: db
+    image: postgres:alpine
+    networks:
+      overlay:
+        ipv4_address: 172.18.1.10
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=P@ssw0rd
+    #volumes:
+    #  - db-data:/var/lib/postgresql/data
 
 #  swagger-editor:
 #    container_name: swagger-ed
@@ -38,3 +55,11 @@ networks:
       driver: default
       config:
         - subnet: 172.18.1.0/24
+
+volumes:
+  db-data:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: '/home/denis/develop/scala/doobie/db'

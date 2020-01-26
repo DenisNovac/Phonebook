@@ -30,6 +30,13 @@ libraryDependencies += "org.slf4j" % "slf4j-simple" % "1.7.30"
 libraryDependencies += "org.slf4j" % "slf4j-api" % "1.7.30"
 libraryDependencies += "org.log4s" %% "log4s" % "1.8.2"
 
+lazy val doobieVersion = "0.8.8"
+
+libraryDependencies ++= Seq(
+  "org.tpolecat" %% "doobie-core"     % doobieVersion,
+  "org.tpolecat" %% "doobie-postgres" % doobieVersion,
+  "org.tpolecat" %% "doobie-specs2"   % doobieVersion
+)
 
 libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % Test
 

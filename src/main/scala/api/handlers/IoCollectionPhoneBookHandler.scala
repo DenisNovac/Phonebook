@@ -13,8 +13,10 @@ import share.ContactModel._
 import share.PhoneBookModel.{bookEncoder, bookDecoder, PhoneBook, PhoneBookModel}
 import collection.CollectionPhoneBookHandler._
 
-
-object IoCollectionBookHandler extends ApiPhoneBookHandler {
+/** Класс, в котором собраны методы для обращения к CollectionPhoneBookHandler
+  * Является обёрткой над ними, позволяющей менять состояние справочника, заключённое в одной переменной.
+  */
+object IoCollectionPhoneBookHandler extends ApiPhoneBookHandler {
 
   // базовая телефонная книга, ссылка на которую будет меняться
   private val phonebookIo: Ref[IO, List[Contact]] = Ref.of[IO, List[Contact]](List()).unsafeRunSync()
