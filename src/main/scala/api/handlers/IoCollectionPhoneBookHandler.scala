@@ -18,12 +18,12 @@ import org.log4s._
 /** Класс, в котором собраны методы для обращения к CollectionPhoneBookHandler
   * Является обёрткой над ними, позволяющей менять состояние справочника, заключённое в одной переменной.
   */
-class IoCollectionPhoneBookHandler extends ApiPhoneBookHandler {
+class IoCollectionPhoneBookHandler(phonebookIo: Ref[IO, List[Contact]] ) extends ApiPhoneBookHandler {
   private val logger = getLogger("IoCollectionPhoneBookHandler")
   logger.info("initialized in-memory storage")
 
   // базовая телефонная книга, ссылка на которую будет меняться
-  private val phonebookIo: Ref[IO, List[Contact]] = Ref.of[IO, List[Contact]](List()).unsafeRunSync()
+//  private val phonebookIo: Ref[IO, List[Contact]] = Ref.of[IO, List[Contact]](List()).unsafeRunSync()
 
   // метод, создающий процесс IO для замены ссылки в phonebookIo
   private def updateRefIo(newBook: PhoneBook): IO[Unit] = for {
