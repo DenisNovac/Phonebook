@@ -1,63 +1,107 @@
 package api
 
 import cats.effect._
+import cats.implicits._
+
 import org.http4s._
-import org.http4s.dsl.io._
 import org.http4s.circe._
+import org.http4s.implicits._
+import org.http4s.dsl.Http4sDsl
+import org.http4s.server.Router
+import org.http4s.HttpRoutes
+
+import org.log4s.getLogger
+
 
 import scala.concurrent.ExecutionContext
 import java.io.File
 import java.util.concurrent._
 
-import share.ContactModel._
-import api.handlers.{ApiPhoneBookHandler, IoCollectionPhoneBookHandler, IoDbPhoneBookHandler}
+import model.ContactModel._
+import model.PhoneBookApiModel
 
 
+class Api[F[_]: Async] (phoneBookApi: PhoneBookApiModel[F]) (implicit contextShift: ContextShift[F])
+  extends Http4sDsl[F] {
 
-class Api (handler: ApiPhoneBookHandler) {
-  /** Декодер реквестов в JSON формата ContactRequest */
-  implicit lazy val requestDecoder = jsonOf[IO, ContactRequest]
+  /** Декодеры из JSON формата */
+  implicit private lazy val requestDecoder: EntityDecoder[F, ContactRequest] = jsonOf[F, ContactRequest]
 
-  /** Эти имплиситы необходимы для возврата файла с описанием API по запросу */
-  val blockingEc = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(4))
-  implicit val cs: ContextShift[IO] = IO.contextShift(ExecutionContext.global)
+  /** Энкодеры в JSON формат */
+  implicit private lazy val contactsEncoder: EntityEncoder[F, List[Contact]] = jsonEncoderOf[F, List[Contact]]
+  implicit private lazy val rowsChanged: EntityEncoder[F, Int] = jsonEncoderOf[F, Int]
 
-  val apiCall = HttpRoutes.of[IO] {
+
+  private val blockingEc = ExecutionContext.fromExecutorService(Executors.newFixedThreadPool(4))
+  val apiCall: HttpRoutes[F] = HttpRoutes.of[F] {
     case req @ GET -> Root / "api" =>
       StaticFile.fromFile(new File("swagger.yaml"), blockingEc, Some(req)).getOrElseF(NotFound())
   }
 
 
-
-  val indexCall = HttpRoutes.of[IO] {
+  val indexCall = HttpRoutes.of[F] {
     case req @ GET -> Root =>
-      Ok("Phonebook OK")
+      Ok("Phonebook is UP")
   }
 
 
-  val addContact = HttpRoutes.of[IO] {
+  val listContacts = HttpRoutes.of[F] {
+    case GET -> Root / "contacts" =>
+      Ok(phoneBookApi.listContacts())
+  }
+
+
+  val addContact = HttpRoutes.of[F] {
+    case req @ POST -> Root / "contact" => {
+
+      for {
+        contactRequest <- req.as[ContactRequest]
+        resp <- phoneBookApi.addContact(contactRequest)
+      } yield ()
+
+      Ok(phoneBookApi.listContacts())
+    }
+  }
+
+
+  private val apiRoutes = indexCall <+> apiCall <+> listContacts <+> addContact
+  val routes: HttpApp[F] = Router("/" -> apiRoutes).orNotFound
+
+
+/*
+  val addContact = HttpRoutes.of[F] {
     case req @ POST -> Root / "contact" =>
       for {
         contactRequest <- req.as[ContactRequest]
-        resp <- handler.addContactIo(contactRequest)
-      } yield resp
+        resp <- phoneBookApi.addContact(contactRequest)
+      } yield {
+        resp match {
+          case i>0 => Ok()
+          case _ => InternalServerError()
+        }
+      }
   }
+*/
 
 
-  val listContacts = HttpRoutes.of[IO] {
+
+  /*val listContacts = HttpRoutes.of[IO] {
     case GET -> Root / "contacts" =>
-      for {
-        resp <- handler.listContactsIo()
-      } yield resp
-  }
+      phoneBookApi.listContacts().unsafeRunSync() match {
+        case x::xs => Ok(PhoneBookModel(x::xs).asJson)
+        case _ => InternalServerError()
+      }
+  }*/
 
-
+/*
   object NameParser extends QueryParamDecoderMatcher[String]("name")  // достаёт имена из куска запроса
   val findContactsByName = HttpRoutes.of[IO] {
     case  GET -> Root / "contact" / "findByName" :? NameParser(name) =>
       for {
-        resp <- handler.findContactByNameIo(name.split(",").toList)
-      } yield resp
+        resp <- phoneBookApi.findContactByName(name.split(",").toList)
+      } yield {
+        Ok(PhoneBookModel(resp).asJson)
+      }.unsafeRunSync()
   }
 
 
@@ -65,16 +109,23 @@ class Api (handler: ApiPhoneBookHandler) {
   val findContactsByPhone = HttpRoutes.of[IO] {
     case  GET -> Root / "contact" / "findByPhone" :? PhoneParser(phone) =>
       for {
-        resp <- handler.findContactByPhoneIo(phone.split(",").toList)
-      } yield resp
+        resp <- phoneBookApi.findContactByPhone(phone.split(",").toList)
+      } yield {
+        Ok(PhoneBookModel(resp).asJson)
+      }.unsafeRunSync()
   }
 
 
   val getContactById = HttpRoutes.of[IO] {
     case GET -> Root / "contact" / contactId =>
       for {
-        resp <- handler.getContactByIdIo(contactId.toLong)
-      } yield resp
+        resp <- phoneBookApi.getContactById(contactId.toLong)
+      } yield {
+        resp match {
+          case x => Ok(x.asJson)
+          case _ => InternalServerError()
+        }
+      }.unsafeRunSync()
   }
 
 
@@ -82,16 +133,25 @@ class Api (handler: ApiPhoneBookHandler) {
     case req @ PUT -> Root / "contact" / contactId =>
       for {
         contactRequest <- req.as[ContactRequest]
-        resp <- handler.updateContactIo(contactId.toLong, contactRequest)
-      } yield resp
+        resp <- phoneBookApi.updateContact(contactId.toLong, contactRequest)
+      } yield {
+        resp match {
+          case i>0 => Ok()
+          case _ => InternalServerError()
+        }
+      }.unsafeRunSync()
   }
 
 
   val deleteContact = HttpRoutes.of[IO] {
     case DELETE -> Root / "contact" / contactId =>
       for {
-        resp <- handler.deleteContactIo(contactId.toLong)
-      } yield resp
-  }
-
+        resp <- phoneBookApi.deleteContact(contactId.toLong)
+      } yield {
+        resp match {
+          case i>0 => Ok()
+          case _ => InternalServerError()
+        }
+      }.unsafeRunSync()
+  }*/
 }

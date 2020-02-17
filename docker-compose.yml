@@ -4,7 +4,8 @@ services:
 
   phonebook:
     container_name: phonebook
-    image: denisnovac/scala-phonebook
+    #image: denisnovac/scala-phonebook
+    build: .
     networks:
       overlay:
         ipv4_address: 172.18.1.2

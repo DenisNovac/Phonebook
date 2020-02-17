@@ -1,4 +1,4 @@
-package share
+package config
 
 /** Шаблон для конфигураций */
 case class Config (
