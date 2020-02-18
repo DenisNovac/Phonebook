@@ -6,6 +6,14 @@ scalaVersion := "2.12.10"
 //scalaVersion := "2.13.1"  // не поддерживается http4s
 
 
+
+// https://mvnrepository.com/artifact/org.typelevel/cats
+libraryDependencies += "org.typelevel" %% "cats" % "0.9.0"
+// https://mvnrepository.com/artifact/org.typelevel/cats-effect
+libraryDependencies += "org.typelevel" %% "cats-effect" % "2.1.1"
+
+
+
 val circeVersion = "0.12.3"
 
 libraryDependencies ++= Seq(
