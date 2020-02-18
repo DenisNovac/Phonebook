@@ -71,6 +71,7 @@ class Api[F[_] : Sync : Monad](phoneBookApi: PhoneBookApiModel[F])(implicit cont
       Ok(response)
   }
 
+
   object PhoneParser extends QueryParamDecoderMatcher[String]("phone")  // достаёт номера из куска запроса
   val findContactsByPhone = HttpRoutes.of[F] {
     case  GET -> Root / "contact" / "findByPhone" :? PhoneParser(phone) =>
@@ -86,44 +87,34 @@ class Api[F[_] : Sync : Monad](phoneBookApi: PhoneBookApiModel[F])(implicit cont
       val response: F[Option[Contact]] = for {
         r <- phoneBookApi.getContactById(contactId.toLong)
       } yield r
-
       response >> Ok(response)
+  }
 
+
+  val updateContact = HttpRoutes.of[F] {
+    case req @ PUT -> Root / "contact" / contactId =>
+      val response: F[Int] = for {
+        contactRequest <- req.as[ContactRequest]
+        r <- phoneBookApi.updateContact(contactId.toLong, contactRequest)
+      } yield r
+      response >> Ok(response)
+  }
+
+
+  val deleteContact = HttpRoutes.of[F] {
+    case DELETE -> Root / "contact" / contactId =>
+      val response: F[Int] = for {
+        r <- phoneBookApi.deleteContact(contactId.toLong)
+      } yield r
+      response >> Ok(response)
   }
 
 
 
   private val apiRoutes = indexCall <+> apiCall <+> listContacts <+> addContact <+> findContactsByName <+>
-    findContactsByPhone <+> getContactById
+    findContactsByPhone <+> getContactById <+> updateContact <+> deleteContact
 
   val routes: HttpApp[F] = Router("/" -> apiRoutes).orNotFound
 
 
-
-  /*
-    val updateContact = HttpRoutes.of[IO] {
-      case req @ PUT -> Root / "contact" / contactId =>
-        for {
-          contactRequest <- req.as[ContactRequest]
-          resp <- phoneBookApi.updateContact(contactId.toLong, contactRequest)
-        } yield {
-          resp match {
-            case i>0 => Ok()
-            case _ => InternalServerError()
-          }
-        }.unsafeRunSync()
-    }
-
-
-    val deleteContact = HttpRoutes.of[IO] {
-      case DELETE -> Root / "contact" / contactId =>
-        for {
-          resp <- phoneBookApi.deleteContact(contactId.toLong)
-        } yield {
-          resp match {
-            case i>0 => Ok()
-            case _ => InternalServerError()
-          }
-        }.unsafeRunSync()
-    }*/
 }
