@@ -58,7 +58,7 @@ class Api[F[_] : Sync : Monad](phoneBookApi: PhoneBookApiModel[F])(implicit cont
         contactRequest <- req.as[ContactRequest]
         r <- phoneBookApi.addContact(contactRequest)
       } yield r
-      response >> Ok(response)
+      Ok(response)
   }
 
 
@@ -87,7 +87,7 @@ class Api[F[_] : Sync : Monad](phoneBookApi: PhoneBookApiModel[F])(implicit cont
       val response: F[Option[Contact]] = for {
         r <- phoneBookApi.getContactById(contactId.toLong)
       } yield r
-      response >> Ok(response)
+      Ok(response)
   }
 
 
@@ -97,7 +97,7 @@ class Api[F[_] : Sync : Monad](phoneBookApi: PhoneBookApiModel[F])(implicit cont
         contactRequest <- req.as[ContactRequest]
         r <- phoneBookApi.updateContact(contactId.toLong, contactRequest)
       } yield r
-      response >> Ok(response)
+      Ok(response)
   }
 
 
@@ -106,7 +106,7 @@ class Api[F[_] : Sync : Monad](phoneBookApi: PhoneBookApiModel[F])(implicit cont
       val response: F[Int] = for {
         r <- phoneBookApi.deleteContact(contactId.toLong)
       } yield r
-      response >> Ok(response)
+      Ok(response)
   }
 
 
