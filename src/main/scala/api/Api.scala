@@ -29,7 +29,7 @@ class Api[F[_] : Sync : Monad](phoneBookApi: PhoneBookApiModel[F])(implicit cont
 
   /** Энкодеры в JSON формат */
   implicit private lazy val contactsEncoder: EntityEncoder[F, List[Contact]] = jsonEncoderOf[F, List[Contact]]
-  implicit private lazy val optionContactEncoder: EntityEncoder[F, Option[Contact]] = jsonEncoderOf[F, Option[Contact]]
+  implicit private lazy val optionContactEncoder: EntityEncoder[F, Contact] = jsonEncoderOf[F, Contact]
   implicit private lazy val rowsChanged: EntityEncoder[F, Int] = jsonEncoderOf[F, Int]
 
 
@@ -41,7 +41,7 @@ class Api[F[_] : Sync : Monad](phoneBookApi: PhoneBookApiModel[F])(implicit cont
 
 
   val indexCall = HttpRoutes.of[F] {
-    case req@GET -> Root =>
+    case GET -> Root =>
       Ok("Phonebook is UP")
   }
 
@@ -53,12 +53,16 @@ class Api[F[_] : Sync : Monad](phoneBookApi: PhoneBookApiModel[F])(implicit cont
 
 
   val addContact = HttpRoutes.of[F] {
-    case req@POST -> Root / "contact" =>
+    case req @ POST -> Root / "contact" =>
       val response: F[Int] = for {
         contactRequest <- req.as[ContactRequest]
         r <- phoneBookApi.addContact(contactRequest)
       } yield r
-      Ok(response)
+
+      response.flatMap {
+        case 1 => Ok()
+        case _ => InternalServerError()
+      }
   }
 
 
@@ -87,7 +91,11 @@ class Api[F[_] : Sync : Monad](phoneBookApi: PhoneBookApiModel[F])(implicit cont
       val response: F[Option[Contact]] = for {
         r <- phoneBookApi.getContactById(contactId.toLong)
       } yield r
-      Ok(response)
+
+      response.flatMap {
+        case Some(x) => Ok(x)
+        case _ => InternalServerError()
+      }
   }
 
 
@@ -97,7 +105,10 @@ class Api[F[_] : Sync : Monad](phoneBookApi: PhoneBookApiModel[F])(implicit cont
         contactRequest <- req.as[ContactRequest]
         r <- phoneBookApi.updateContact(contactId.toLong, contactRequest)
       } yield r
-      Ok(response)
+      response.flatMap {
+        case 1 => Ok()
+        case _ => InternalServerError()
+      }
   }
 
 
@@ -106,7 +117,10 @@ class Api[F[_] : Sync : Monad](phoneBookApi: PhoneBookApiModel[F])(implicit cont
       val response: F[Int] = for {
         r <- phoneBookApi.deleteContact(contactId.toLong)
       } yield r
-      Ok(response)
+      response.flatMap {
+        case 1 => Ok()
+        case _ => InternalServerError()
+      }
   }
 
 
