@@ -3,7 +3,6 @@ package model
 import ContactModel.{Contact, ContactRequest}
 import cats.effect.Async
 
-
 trait PhoneBookApiModel[F[_]] {
 
   def addContact(c: ContactRequest): F[Int]

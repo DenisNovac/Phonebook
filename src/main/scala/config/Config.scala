@@ -1,15 +1,16 @@
 package config
 
 /** Шаблон для конфигураций */
-case class Config (
-  persistent: Boolean,
-  appHost: String ,
-  appPort: String,
-  dbHost: String,
-  dbPort: String,
-  db: String,
-  dbUser: String,
-  dbPassword: String) {
+case class Config(
+    persistent: Boolean,
+    appHost: String,
+    appPort: String,
+    dbHost: String,
+    dbPort: String,
+    db: String,
+    dbUser: String,
+    dbPassword: String
+) {
 
   override def toString: String = persistent match {
     case true => s"""
